@@ -56,6 +56,7 @@ def main():
                     if st.button("Update Date", key=f"update_{movie.get('ratingKey')}"):
                         plex.update_added_date(section_id, movie.get('ratingKey'), type_id, new_date_unix)
                         st.success(f"Updated added date for {movie.get('title', 'Unknown Title')} to {new_date}")
+                        st.rerun()
         else:
             st.write("No movies found.")
 
