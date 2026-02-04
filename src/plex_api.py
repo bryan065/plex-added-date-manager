@@ -5,30 +5,37 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class PlexAPI:
-    def __init__(self, base_url=None, token=None):
+    def __init__(self, base_url=None, token=None, fetch_limit=None):
         if base_url is None:
             base_url = os.environ.get("PLEX_BASE_URL")
         if token is None:
             token = os.environ.get("PLEX_TOKEN")
+        if fetch_limit is None:
+            # ensure FETCH_LIMIT is defined if Dockerfile is not used
+            fetch_limit = os.environ.get("FETCH_LIMIT") if "FETCH_LIMIT" in os.environ else "21"
         self.base_url = base_url
         self.token = token
+        self.fetch_limit = fetch_limit
 
     def _get_headers(self):
         return {
             'X-Plex-Token': self.token,
+            'X-Plex-Container-Start': '0',
+            'X-Plex-Container-Size': self.fetch_limit,
             'Accept': 'application/json'
         }
 
     def fetch_movies(self):
-        url = f"{self.base_url}/library/sections/1/all"
+        url = f"{self.base_url}/library/sections/1/recentlyAdded"
         response = requests.get(url, headers=self._get_headers())
         if response.status_code == 200:
             return response.json().get('MediaContainer', {}).get('Metadata', [])
         else:
             response.raise_for_status()
 
-    def get_all_movies(self):
-        return self.fetch_movies()
+    def get_recent_movies(self):
+        movies = self.fetch_movies()
+        return movies[:int(self.fetch_limit)]
 
     def fetch_tv_shows(self, section_id):
         """Fetch all TV shows from a specific section"""

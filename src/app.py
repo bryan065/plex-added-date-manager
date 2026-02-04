@@ -13,11 +13,8 @@ def main():
 
     # --- Movies Tab ---
     with tab1:
-        # Fetch all movies
-        movies = plex.get_all_movies()
-
-        # Sort movies by addedAt descending (most recent first)
-        movies = sorted(movies, key=lambda m: int(m.get('addedAt', 0)), reverse=True)
+        # Fetch recent movies
+        movies = plex.get_recent_movies()
 
         # Display movies
         if movies:
