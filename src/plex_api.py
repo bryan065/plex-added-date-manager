@@ -20,7 +20,7 @@ class PlexAPI:
         }
 
     def fetch_movies(self):
-        url = f"{self.base_url}/library/sections/1/all"
+        url = f"{self.base_url}/library/recentlyAdded"
         response = requests.get(url, headers=self._get_headers())
         if response.status_code == 200:
             return response.json().get('MediaContainer', {}).get('Metadata', [])
@@ -28,7 +28,17 @@ class PlexAPI:
             response.raise_for_status()
 
     def get_all_movies(self):
-        return self.fetch_movies()
+        return sorted(self.fetch_movies(), key=lambda m: int(m.get('addedAt', 0)), reverse=True)
+
+    def get_recent_movies(self):
+        if "FETCH_AMOUNT" in os.environ:
+            fetch = int(os.environ.get("FETCH_AMOUNT"))
+        else:
+            fetch = 21
+
+        #movies_all = sorted(self.fetch_movies(), key=lambda m: int(m.get('addedAt', 0)), reverse=True)
+        movies = self.fetch_movies()
+        return movies[:fetch]
 
     def fetch_tv_shows(self, section_id):
         """Fetch all TV shows from a specific section"""
